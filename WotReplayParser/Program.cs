@@ -6,7 +6,8 @@ namespace WotReplayParser
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Parse parse = new Parse();
+            parse.parse(@"C:\Games\World_of_Tanks_RU\replays\20210727_2047_france-F97_ELC_EVEN_90_45_north_america.wotreplay");
         }
     }
 }

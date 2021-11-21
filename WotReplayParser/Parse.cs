@@ -2,29 +2,28 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Newtonsoft.Json;
 
-namespace Demo01
+namespace WotReplayParser
 {
     class Parse
     {
-        void parse(String fileName)
+        public void parse(String fileName)
         {
 
-            FileStream fs = new FileStream(@"C:\Users\Public\TestFolder\WriteText.txt", FileMode.Open);
-            //skip 3 byte
-            readBytesFromFileStream(fs, 3);
+            FileStream fs = new FileStream(fileName, FileMode.Open);
 
             // read block count 
             int blockCount = readDataBlockCount(fs);
+
+            //skip 3 byte 
+            _ = readBytesFromFileStream(fs, 3);
 
             //loop read block 
             for (int i = 0; i < blockCount; i++)
             {
                 readDataBlock(fs);
             }
-
-
-
 
 
         }
@@ -34,7 +33,7 @@ namespace Demo01
         {
             //skip 4 bytes in file head , is might be the magic number of the file
             //0x12 0x32 0x34 0x11 
-            fs.Read(new byte[4], 0, 4);
+            readBytesFromFileStream(fs, 4);
             return fs.ReadByte();
         }
 
@@ -44,14 +43,12 @@ namespace Demo01
         {
             //readBlockLength
             byte[] intBytes = readBytesFromFileStream(fs, 4);
-            int blockLength = bytesToIntBE(intBytes);
+            uint blockLength = bytesToUIntLE(intBytes);
             //read block array
             byte[] blockArray = readBytesFromFileStream(fs, blockLength);
 
-
-
-
-
+            string jsonStr = Encoding.UTF8.GetString(blockArray);
+            Console.WriteLine(jsonStr);
         }
 
 
@@ -60,7 +57,7 @@ namespace Demo01
          * 
          * 
          */
-        byte[] readBytesFromFileStream(FileStream fs, int length)
+        byte[] readBytesFromFileStream(FileStream fs, uint length)
         {
             //check if file does not have enough bytes to read
             if (fs.Length - fs.Position < length)
@@ -75,16 +72,16 @@ namespace Demo01
         /* 
          * cast byte array to int with big-endian
          */
-        int bytesToIntBE(byte[] bytes)
+        uint bytesToUIntLE(byte[] bytes)
         {
             if (bytes.Length < 4)
             {
                 return 0;
             }
-            return bytes[0] << 3 * 8 |
-                bytes[1] << 2 * 8 |
-                bytes[2] << 1 * 8 |
-                bytes[0];
+            return (uint)(bytes[0]  |
+                bytes[1] << 1 * 8 |
+                bytes[2] << 2 * 8 |
+                bytes[3] << 3 * 8);
         }
 
 
