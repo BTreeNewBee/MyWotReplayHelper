@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
+using WotReplayParser.Entity;
 
 namespace WotReplayParser
 {
@@ -49,6 +50,9 @@ namespace WotReplayParser
 
             string jsonStr = Encoding.UTF8.GetString(blockArray);
             Console.WriteLine(jsonStr);
+            DataBlock dataBlock = JsonConvert.DeserializeObject<DataBlock>(jsonStr);
+            Console.WriteLine();
+            Console.WriteLine(JsonConvert.SerializeObject(dataBlock));
         }
 
 
