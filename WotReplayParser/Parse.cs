@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
@@ -20,13 +20,26 @@ namespace WotReplayParser
             //skip 3 byte 
             _ = readBytesFromFileStream(fs, 3);
 
+
+            ArrayList datablocks = new ArrayList<DataBlock>();
             //loop read block 
             for (int i = 0; i < blockCount; i++)
             {
-                readDataBlock(fs);
+                datablocks.add(readDataBlock(fs));
             }
 
+            //last encrypted slice, unknown content
+            //skip 4 byte
+            readBytesFromFileStream(fs, 4);
+            //read length
+            uint sliceLength = bytesToUIntLE(readBytesFromFileStream(fs, 4));
+            //skip slice
+            readBytesFromFileStream(fs, sliceLength);
 
+            if (datablocks.size() < 1)
+            {
+                return;
+            }
         }
 
 
@@ -40,7 +53,7 @@ namespace WotReplayParser
 
 
 
-        void readDataBlock(FileStream fs)
+        DataBlock readDataBlock(FileStream fs)
         {
             //readBlockLength
             byte[] intBytes = readBytesFromFileStream(fs, 4);
@@ -49,10 +62,8 @@ namespace WotReplayParser
             byte[] blockArray = readBytesFromFileStream(fs, blockLength);
 
             string jsonStr = Encoding.UTF8.GetString(blockArray);
-            Console.WriteLine(jsonStr);
             DataBlock dataBlock = JsonConvert.DeserializeObject<DataBlock>(jsonStr);
-            Console.WriteLine();
-            Console.WriteLine(JsonConvert.SerializeObject(dataBlock));
+            return dataBlock;
         }
 
 
@@ -66,7 +77,7 @@ namespace WotReplayParser
             //check if file does not have enough bytes to read
             if (fs.Length - fs.Position < length)
             {
-                throw new Exception("Read error ! File length not enough to read ! current position " + fs.Position + ", read length " + length + ".");
+                throw new Exception("Read error ! File length not enough to read ! Current position " + fs.Position + ", read length " + length + ".");
             }
             byte[] bytes = new byte[length];
             fs.Read(bytes);
