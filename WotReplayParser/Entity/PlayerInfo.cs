@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WotReplayParser.Entity
 {
-    class DataBlock
+    class PlayerInfo
     {
         public string playerVehicle { get; set; }
 

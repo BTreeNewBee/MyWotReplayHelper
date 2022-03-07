@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
@@ -21,11 +22,19 @@ namespace WotReplayParser
             _ = readBytesFromFileStream(fs, 3);
 
 
-            ArrayList datablocks = new ArrayList<DataBlock>();
+            List<byte[]> datablocks = new List<byte[]>();
+
             //loop read block 
             for (int i = 0; i < blockCount; i++)
             {
-                datablocks.add(readDataBlock(fs));
+                datablocks.Add(readDataBlock(fs));
+            }
+
+            for (int i = 0; i < blockCount; i++)
+            {
+                string jsonStr = Encoding.UTF8.GetString(datablocks[i]);
+                Console.WriteLine(jsonStr);
+                //DataBlock dataBlock = JsonConvert.DeserializeObject<DataBlock>(jsonStr);
             }
 
             //last encrypted slice, unknown content
@@ -36,7 +45,7 @@ namespace WotReplayParser
             //skip slice
             readBytesFromFileStream(fs, sliceLength);
 
-            if (datablocks.size() < 1)
+            if (datablocks.Count < 1)
             {
                 return;
             }
@@ -53,7 +62,7 @@ namespace WotReplayParser
 
 
 
-        DataBlock readDataBlock(FileStream fs)
+        byte[] readDataBlock(FileStream fs)
         {
             //readBlockLength
             byte[] intBytes = readBytesFromFileStream(fs, 4);
@@ -61,9 +70,7 @@ namespace WotReplayParser
             //read block array
             byte[] blockArray = readBytesFromFileStream(fs, blockLength);
 
-            string jsonStr = Encoding.UTF8.GetString(blockArray);
-            DataBlock dataBlock = JsonConvert.DeserializeObject<DataBlock>(jsonStr);
-            return dataBlock;
+            return blockArray;
         }
 
 
